@@ -8,6 +8,10 @@ function ResultTable({ keyword, user, onAdded }) {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   useEffect(() => {
     const fetchUsers = async () => {
       const usersRes = await getUsers();
@@ -18,6 +22,7 @@ function ResultTable({ keyword, user, onAdded }) {
     fetchUsers();
   }, []);
 
+  // Thêm user mới từ props
   useEffect(() => {
     if (user) {
       setUsers((prev) => [...prev, { ...user, id: prev.length + 1 }]);
@@ -25,11 +30,18 @@ function ResultTable({ keyword, user, onAdded }) {
     }
   }, [user]);
 
+  // Lọc theo keyword
   const filteredUsers = users.filter(
     (u) =>
       u.name.toLowerCase().includes(keyword.toLowerCase()) ||
       u.username.toLowerCase().includes(keyword.toLowerCase()),
   );
+
+  // Tính paginate
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   const removeUser = (id) => {
     setUsers((prev) => prev.filter((u) => u.id !== id));
@@ -74,7 +86,7 @@ function ResultTable({ keyword, user, onAdded }) {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((u) => (
+          {currentUsers.map((u) => (
             <tr key={u.id}>
               <td>{u.id}</td>
               <td>{u.name}</td>
@@ -91,35 +103,68 @@ function ResultTable({ keyword, user, onAdded }) {
         </tbody>
       </table>
 
+      {/* PAGINATION */}
+      <div className="pagination">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((p) => p - 1)}
+        >
+          Prev
+        </button>
+
+        {[...Array(totalPages)].map((_, i) => (
+          <button
+            key={i}
+            className={currentPage === i + 1 ? 'active' : ''}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((p) => p + 1)}
+        >
+          Next
+        </button>
+      </div>
+
       {editing && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Sửa người dùng</h3>
+
             <label>Name:</label>
             <input
               value={editing.name}
               onChange={(e) => handleEditChange('name', e.target.value)}
             />
+
             <label>Username:</label>
             <input
               value={editing.username}
               onChange={(e) => handleEditChange('username', e.target.value)}
             />
+
             <label>Email:</label>
             <input
               value={editing.email}
               onChange={(e) => handleEditChange('email', e.target.value)}
             />
+
             <label>Phone:</label>
             <input
               value={editing.phone}
               onChange={(e) => handleEditChange('phone', e.target.value)}
             />
+
             <label>Website:</label>
             <input
               value={editing.website}
               onChange={(e) => handleEditChange('website', e.target.value)}
             />
+
             <div className="modal-buttons">
               <button onClick={saveUser}>Lưu</button>
               <button onClick={() => setEditing(null)}>Hủy</button>
