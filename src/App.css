@@ -1,0 +1,12 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #ffffff;
+}
+.app-container {
+  text-align: center;
+  width: 98vw;
+  overflow-y: hidden;
+}
+h1 {
+  color: #333;
+}
